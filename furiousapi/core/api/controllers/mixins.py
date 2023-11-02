@@ -76,6 +76,8 @@ class GetModelMixin(BaseModelRouteMixin):
         responses = {404: {"model": error_details.NotFoundHttpErrorDetails, "content": {"application/json": {}}}}
         params = {"responses": responses, "response_model": cls.__repository_cls__.__model__}
         add_model_method_name(cast("Type[ModelController]", cls), params)
+        if isinstance(cls.__get_params__, dict):
+            params.update(cls.__get_params__)
 
         cls.api_router.get("/{id}", **params)(cls.get)  # type: ignore[arg-type]
 
@@ -106,6 +108,8 @@ class ListModelMixin(BaseModelRouteMixin):
         )
         cls.list.__signature__ = signature.replace(parameters=list(parameters.values()))  # type: ignore[attr-defined]
         params = {"response_model": PaginatedResponse[cls.__repository_cls__.__model__]}  # type: ignore[name-defined]
+        if isinstance(cls.__list_params__, dict):
+            params.update(cls.__list_params__)
         add_model_method_name(cast("Type[ModelController]", cls), params, plural=True)
         cls.api_router.get("/", **params)(cls.list)  # type: ignore[arg-type]
 
@@ -129,6 +133,8 @@ class DeleteModelMixin(BaseModelRouteMixin):
     def __bootstrap__(cls, *args, **kwargs) -> None:
         responses = {404: {"model": error_details.NotFoundHttpErrorDetails, "content": {"application/json": {}}}}
         params = {"responses": responses}
+        if isinstance(cls.__delete_params__, dict):
+            params.update(cls.__delete_params__)
         add_model_method_name(cast("Type[ModelController]", cls), params)
         cls.api_router.delete("/{id}", **params)(cls.delete)  # type: ignore[arg-type]
 
@@ -155,6 +161,9 @@ class CreateModelMixin(BaseModelRouteMixin):
 
         cls.create.__signature__ = signature.replace(parameters=list(parameters.values()))  # type: ignore[attr-defined]
         params = {"responses": responses, "response_model": cls.__repository_cls__.__model__}
+        if isinstance(cls.__create_params__, dict):
+            params.update(cls.__create_params__)
+        
         add_model_method_name(cast("Type[ModelController]", cls), params)
         cls.api_router.post("/", **params)(cls.create)  # type: ignore[arg-type]
 
@@ -181,6 +190,8 @@ class UpdateModelMixin(BaseModelRouteMixin):
 
         cls.update.__signature__ = signature.replace(parameters=list(parameters.values()))  # type: ignore[attr-defined]
         params = {"responses": responses, "response_model": cls.__repository_cls__.__model__}
+        if isinstance(cls.__update_params__, dict):
+            params.update(cls.__update_params__)
         add_model_method_name(cast("Type[ModelController]", cls), params)
         cls.api_router.put("/", **params)(cls.update)  # type: ignore[arg-type]
 
